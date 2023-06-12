@@ -1,4 +1,4 @@
-export type Node = any
+export type Node = number | string | bigint
 
 export type HashFunction = (a: Node, b: Node) => Node
 
