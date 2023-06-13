@@ -1,5 +1,5 @@
 import checkParameter from "./checkParameter"
-import { HashFunction, Node } from "./types"
+import { HashFunction, MerkleProof, Node } from "./types"
 
 export default class IncrementalMerkleTree {
     private readonly _nodes: Node[][]
@@ -12,6 +12,8 @@ export default class IncrementalMerkleTree {
      */
     constructor(hash: HashFunction) {
         checkParameter(hash, "hash", "function")
+
+        // TODO: Re-create function to add many leaves at once.
 
         // Initialize the attributes.
         this._nodes = [[]]
@@ -93,5 +95,30 @@ export default class IncrementalMerkleTree {
 
         // Finally, it stores the new root.
         this._nodes[this.depth] = [node]
+    }
+
+    generateMerkleProof(leaf: Node): MerkleProof {
+        checkParameter(leaf, "leaf", "number", "string", "bigint")
+
+        let index = this.indexOf(leaf)
+
+        if (index === -1) {
+            throw new Error("The leaf does not exist in this tree")
+        }
+
+        const path = index
+        const siblings: Node[] = []
+
+        for (let level = 0; level < this.depth; level += 1) {
+            const siblingIndex = index & 1 ? index - 1 : index + 1
+
+            siblings.push(this._nodes[level][siblingIndex])
+
+            index >>= 1
+        }
+
+        // TODO: Undefined nodes could be removed, but the index needs to be updated.
+
+        return { root: this.root, leaf, path, siblings }
     }
 }
