@@ -73,24 +73,25 @@ export default class IncrementalMerkleTree {
             this._nodes.push([])
         }
 
-        this._insert(0, this.size, leaf)
-    }
+        let node = leaf
+        let index = this.size
 
-    _insert(level: number, index: number, node: Node) {
-        if (this.depth === level) {
-            this._nodes[level] = [node]
-            return
+        for (let level = 0; level < this.depth; level += 1) {
+            this._nodes[level][index] = node
+
+            // Bitwise AND, 0 -> left or 1 -> right.
+            // If the node is a right node the parent node will be the hash
+            // of the child nodes. Otherwise, parent will equal left child node.
+            if (index & 1) {
+                const sibling = this._nodes[level][index - 1]
+                node = this._hash(sibling, node)
+            }
+
+            // Right shift, it divides a number by 2 and discards the remainder.
+            index >>= 1
         }
 
-        this._nodes[level][index] = node
-
-        if (index % 2 === 0) {
-            this._insert(level + 1, Math.floor(index / 2), node)
-        } else {
-            const sibling = this._nodes[level][index - 1]
-            const hash = this._hash(sibling, node)
-
-            this._insert(level + 1, Math.floor(index / 2), hash)
-        }
+        // Finally, it stores the new root.
+        this._nodes[this.depth] = [node]
     }
 }

@@ -11,7 +11,7 @@ export default async function run() {
     const tree1 = new IncrementalMerkleTree((a, b) => poseidon2([a, b]))
     const tree2 = new OIncrementalMerkleTree(poseidon2, 20, BigInt(0), 2)
 
-    const numberOfLeaves = 2 ** 6
+    const numberOfLeaves = 2 ** 4
 
     const fn1: FN = [
         `New IncrementalMerkleTree - insert (${numberOfLeaves} leaves)`,
