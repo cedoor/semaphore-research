@@ -6,18 +6,45 @@ export default class IncrementalMerkleTree {
     private readonly _hash: HashFunction
 
     /**
-     * Initializes the tree with the hash function and the arity (i.e.
-     * the number of children for each node).
+     * Initializes the tree with a given hash function and an
+     * optional list of leaves.
      * @param hash Hash function.
+     * @param leaves List of leaves.
      */
-    constructor(hash: HashFunction) {
+    constructor(hash: HashFunction, leaves: Node[] = []) {
         checkParameter(hash, "hash", "function")
-
-        // TODO: Re-create function to add many leaves at once.
+        checkParameter(leaves, "leaves", "object")
 
         // Initialize the attributes.
         this._nodes = [[]]
         this._hash = hash
+
+        // It initializes the tree with a list of leaves if there are any.
+        if (leaves.length > 0) {
+            // It calculates the depth based on the number of leaves.
+            const depth = Math.ceil(Math.log2(leaves.length))
+
+            this._nodes[0] = leaves
+
+            for (let level = 0; level < depth; level += 1) {
+                this._nodes[level + 1] = []
+
+                for (let index = 0; index < Math.ceil(this._nodes[level].length / 2); index += 1) {
+                    let parentNode: Node
+
+                    const rightNode = this._nodes[level][index * 2 + 1]
+                    const leftNode = this._nodes[level][index * 2]
+
+                    if (rightNode) {
+                        parentNode = hash(leftNode, rightNode)
+                    } else {
+                        parentNode = leftNode
+                    }
+
+                    this._nodes[level + 1][index] = parentNode
+                }
+            }
+        }
     }
 
     /**
