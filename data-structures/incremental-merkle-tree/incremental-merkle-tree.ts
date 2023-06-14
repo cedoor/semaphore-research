@@ -82,9 +82,11 @@ export default class IncrementalMerkleTree {
             this._nodes[level][index] = node
 
             // Bitwise AND, 0 -> left or 1 -> right.
+            const isRightNode = index & 1
+
             // If the node is a right node the parent node will be the hash
             // of the child nodes. Otherwise, parent will equal left child node.
-            if (index & 1) {
+            if (isRightNode) {
                 const sibling = this._nodes[level][index - 1]
                 node = this._hash(sibling, node)
             }
@@ -106,19 +108,47 @@ export default class IncrementalMerkleTree {
             throw new Error("The leaf does not exist in this tree")
         }
 
-        const path = index
         const siblings: Node[] = []
+        const path: number[] = []
 
         for (let level = 0; level < this.depth; level += 1) {
-            const siblingIndex = index & 1 ? index - 1 : index + 1
+            const isRightNode = index & 1
+            const siblingIndex = isRightNode ? index - 1 : index + 1
+            const sibling = this._nodes[level][siblingIndex]
 
-            siblings.push(this._nodes[level][siblingIndex])
+            if (sibling) {
+                path.push(isRightNode)
+                siblings.push(sibling)
+            }
 
             index >>= 1
         }
 
-        // TODO: Undefined nodes could be removed, but the index needs to be updated.
+        return { root: this.root, leaf, path: Number.parseInt(path.reverse().join(""), 2), siblings }
+    }
 
-        return { root: this.root, leaf, path, siblings }
+    verifyProof(proof: MerkleProof): boolean {
+        checkParameter(proof, "proof", "object")
+
+        const { root, leaf, siblings, path } = proof
+
+        checkParameter(proof.root, "proof.root", "number", "string", "bigint")
+        checkParameter(proof.leaf, "proof.leaf", "number", "string", "bigint")
+        checkParameter(proof.siblings, "proof.siblings", "object")
+        checkParameter(proof.path, "proof.path", "number")
+
+        let node = leaf
+
+        for (let i = 0; i < siblings.length; i += 1) {
+            const isRightNode = path & 1
+
+            if (isRightNode) {
+                node = this._hash(siblings[i], node)
+            } else {
+                node = this._hash(node, siblings[i])
+            }
+        }
+
+        return root === node
     }
 }
