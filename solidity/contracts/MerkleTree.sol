@@ -27,14 +27,13 @@ library MerkleTree {
         uint256 node = leaf;
 
         for (uint256 i = 0; i < self.depth; ) {
-            if (index & 1 == 1) {
+            if (index >> i & 1 == 1) {
                 node = PoseidonT3.hash([self.siblings[i], node]);
             } else {
                 self.siblings[i] = node;
             }
 
             unchecked {
-                index >>= 1;
                 ++i;
             }
         }

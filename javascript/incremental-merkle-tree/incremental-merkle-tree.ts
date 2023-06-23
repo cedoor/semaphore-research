@@ -109,11 +109,9 @@ export default class IncrementalMerkleTree {
             this._nodes[level][index] = node
 
             // Bitwise AND, 0 -> left or 1 -> right.
-            const isRightNode = index & 1
-
             // If the node is a right node the parent node will be the hash
             // of the child nodes. Otherwise, parent will equal left child node.
-            if (isRightNode) {
+            if (index & 1) {
                 const sibling = this._nodes[level][index - 1]
                 node = this._hash(sibling, node)
             }
@@ -167,9 +165,7 @@ export default class IncrementalMerkleTree {
         let node = leaf
 
         for (let i = 0; i < siblings.length; i += 1) {
-            const isRightNode = path & 1
-
-            if (isRightNode) {
+            if (path & 1) {
                 node = this._hash(siblings[i], node)
             } else {
                 node = this._hash(node, siblings[i])
