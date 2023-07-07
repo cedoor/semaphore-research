@@ -35,10 +35,6 @@ template Semaphore(MAX_DEPTH) {
     poseidon2.inputs[0] <== topic;
     poseidon2.inputs[1] <== privateKey;
 
-    // Dummy square to prevent tampering signalHash.
-    signal signalHashSquared;
-    signalHashSquared <== signalHash * signalHash;
-
     nullifierHash <== poseidon2.out;
 }
 
